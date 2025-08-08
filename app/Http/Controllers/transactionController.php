@@ -21,7 +21,7 @@ function generateTransactionCode($prefix = 'TRX') {
     $now = Carbon::now();
     $date = $now->format('Ymd');       // e.g. 20250723
     $time = $now->format('His');       // e.g. 220745
-    $micro = $now->format('u');        // e.g. 123456 (microseconds)
+    $micro = $now->format('u');        // e.g. 123456 (microseconds) - test
 
     return "{$prefix}-{$date}-{$time}-{$micro}";
 }
@@ -192,7 +192,7 @@ class transactionController extends Controller
      */
     public function show(string $id)
     {
-        //
+        //Under construct
     }
 
     /**
