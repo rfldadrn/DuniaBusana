@@ -39,7 +39,7 @@ class dashboardController extends Controller
         $currentMonthStart = Carbon::now()->startOfMonth();
         $currentMonthEnd = Carbon::now()->endOfMonth();
         $Revenue = [
-            'total' => Transaction::whereBetween('transaction_date',[$currentMonthStart, $currentMonthEnd])->sum('paid_amount'), //Sementara
+            'total' => Transaction::whereBetween('transaction_date',[$currentMonthStart, $currentMonthEnd])->sum('paid_amount'), //Sementaraaaa
         ];
         return view('dashboard',compact(['User','Customer','Transaction','Revenue']));
     }

@@ -13,6 +13,7 @@ class customerController extends Controller
     public function index()
     {
         // Testing after push 1.0
+        return 1 + 1;
     }
 
     /**
