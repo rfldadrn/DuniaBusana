@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditTrails;
 use App\Models\Customer;
 use App\Models\DetailTransaction;
 use App\Models\Item;
@@ -37,7 +38,7 @@ class transactionController extends Controller
         $transactionType = transactionType::all();
         $statusTransaction = statusTransaction::all();
         $paymentStatus = PaymentStatus::all();
-        $data = Transaction::with(['customer','transaction_type','status_payment','status','creator','modifier'])
+        $data = Transaction::with(['customer','transaction_type','status_payment','status','creator','modifier','getAuditTrail'])
         ->orderBy('order_id','desc')
         ->paginate(10);
         return view('transaction.view',compact(['data','transactionType','statusTransaction','paymentStatus']));
@@ -183,7 +184,18 @@ class transactionController extends Controller
             ]);
         }
 
-       return Redirect::route('transaction.edit',['id' => $transaction['id']])
+        $getTrType = transactionType::find($transaction->transaction_type_id);
+        $getCustomer = Customer::find($transaction->customer_id);
+        $auditTrailText = '
+        <p>Nomor Transaksi : ' . $validated['order_id'] . ' </p>
+        <p>Nama Pelannggan : ' . $getCustomer['customer_name'] . ' </p>
+        <p>Tipe Transaksi : ' . $getTrType['name'] . ' </p>
+        <p>Total Transaksi : Rp. ' . number_format($validated['amount'], 0, ',', '.') . ' </p>
+        <p>Uang Muka : Rp. ' . number_format($validated['paid_amount'], 0, ',', '.') . ' </p>
+        ';
+        createAuditTrail('transaction',$transaction->id,$auditTrailText);
+
+        return Redirect::route('transaction.edit',['id' => $transaction['id']])
         ->with('success',$message);
     }
 
@@ -201,14 +213,15 @@ class transactionController extends Controller
     public function edit(string $id)
     {
         $getTrx = Transaction::with(['customer','transaction_type','status_payment','status','creator','modifier'])->find($id);
+        $AuditTrails = getAuditTrails(1,$id);
         $transactionType = transactionType::all();
         $statusTransaction = statusTransaction::all();
         $statusPayment = PaymentStatus::all();
         $itemType = Item::all();
         $customer = Customer::select('id','customer_name')->get();
         $action = "detail";
-        $detail_order = DetailTransaction::with('items')->where('transaction_id',$id)->get()->toJson();
-        return view('transaction.detail',compact(['action','customer','transactionType','getTrx','statusTransaction','itemType','detail_order','statusPayment']));
+        $detail_order = DetailTransaction::with('items','status_order_item')->where('transaction_id',$id)->get()->toJson();
+        return view('transaction.detail',compact(['action','customer','transactionType','getTrx','statusTransaction','itemType','detail_order','statusPayment','AuditTrails']));
     }
 
     /**
@@ -300,6 +313,7 @@ class transactionController extends Controller
                 'qty' => $do->qty,
                 'price' => $do->price,
                 'note' => $do->item_note,
+                'status_order_item_id' => $do->status_id,
             ]);
         }
 

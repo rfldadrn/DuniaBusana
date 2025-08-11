@@ -44,9 +44,15 @@ Route::middleware('auth','verified')->group(function () {
 
     // Customer
     Route::get('/search-customer', [customerController::class, 'searchByPhone'])->name('search.customer');
+    Route::get('/customer', [customerController::class, 'view'])->name('customer.view');
+    Route::get('/customer/{id}', [customerController::class, 'create'])->name('customer.create');
+    Route::patch('/customer', [customerController::class, 'update'])->name('customer.update');
+    Route::post('/customer', [customerController::class, 'store'])->name('customer.store');
+    Route::delete('/customer/delete/{id}', [customerController::class, 'destroy'])->name('customer.delete');
 
     // Monitoring
     Route::get('/monitoring', [monitoringController::class, 'view'])->name('monitoring.view');
+    Route::post('/monitoring/updateDetail', [monitoringController::class, 'updateDetail'])->name('monitoring.updateDetail');
 
 });
 

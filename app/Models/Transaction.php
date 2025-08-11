@@ -52,4 +52,8 @@ class Transaction extends Model
     {
         return $this->hasMany(Item::class, 'id','transaction_id');
     }
+    public function getAuditTrail()
+    {
+        return $this->hasMany(AuditTrails::class, 'id','data_id');
+    }
 }

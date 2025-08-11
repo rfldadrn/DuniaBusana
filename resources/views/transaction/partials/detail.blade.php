@@ -7,9 +7,8 @@
             </div>
             <div class="w-1/2">
                 <button type="button" onclick="openMiniPopup('/downloadInvoice/{{ $getTrx->id }}')" class="float-end" title="Cetak nota"><i class="fa fa-print"></i></button>
-                {{-- <a href="{{ route('invoice.download',$getTrx->id) }}" class="float-end" title="Cetak nota"><i class="fa fa-print"></i></a> --}}
                 <a href="https://wa.me/6281234567890" target="_blank"    class="float-end mr-2" title="Whatsapp"><i class="fa fa-commenting"></i></a>
-                {{-- <span class="text-xs float-end py-1">Tanggal : {{ date('d-F-y') }}</span> --}}
+                <button type="button" class="btn float-end mr-2" onclick="setTableAuditTrail({{$AuditTrails}})"><i class="fa fa-history"></i></button>
             </div>
         </div>
         <div class="flex w-full mb-3">
@@ -192,7 +191,7 @@
             <table id="table-order-list" class="table-auto w-full border border-gray-300">
                 <thead class="bg-gray-100 sticky top-0">
                     <tr class="@if($getTrx->status->id !== 5) hidden @endif">
-                        <th colspan="6" class="px-4 text-sm py-1 text-end border-b">
+                        <th colspan="7" class="px-4 text-sm py-1 text-end border-b">
                             <button type="button" class="btn" onclick="my_modal_1.showModal()"><i class="fa fa-add"></i></button>
                         </th>
                     </tr>
@@ -201,18 +200,19 @@
                         <th class="px-4 text-sm py-1 text-left border-b">Item</th>
                         <th class="px-4 text-sm py-1 border-b text-center">Qty</th>
                         <th class="px-4 text-sm py-1 border-b text-center">Keterangan</th>
+                        <th class="px-4 text-sm py-1 border-b text-center">Status</th>
                         <th class="px-4 text-sm py-1 text-center border-b">Price</th>
                         <th class="px-4 text-sm py-1 text-center border-b">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="6" class="px-4 text-sm py-1 border-b text-center">Belum ada pesanan!</td>
+                        <td colspan="7" class="px-4 text-sm py-1 border-b text-center">Belum ada pesanan!</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr class="bg-slate-300">
-                        <th class="px-4 text-sm py-1 border-b text-center" colspan="4">Total Harga</th>
+                        <th class="px-4 text-sm py-1 border-b text-center" colspan="5">Total Harga</th>
                         <th class="px-4 text-sm py-1 text-end border-b" colspan="2"><span id="tb-total-harga">-</span></th>
                     </tr>
                 </tfoot>
@@ -227,6 +227,42 @@
         </div>
 
 </section>
+
+{{-- Popup audittrail --}}
+<dialog id="my_modal_2" class="modal">
+  <div class="modal-box p-6 rounded-lg shadow-lg bg-white w-[800px] max-h-[100vh] overflow-y-auto">
+    <div class="content">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Audit Trail</h3>
+
+      <div class="modal-action max-h-[40vh] overflow-y-auto">
+        <table id="table-audittrail" class="table-auto w-full border border-gray-300">
+          <thead class="bg-gray-100 sticky top-0">
+            <tr>
+              <th class="px-4 text-sm py-1 text-left border-b">Waktu</th>
+              <th class="px-4 text-sm py-1 border-b text-center">Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="2" class="px-4 text-sm py-1 border-b text-center">Belum ada riwayat!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Close Button -->
+      <div class="text-end mt-4">
+        <button type="button" onclick="document.getElementById('my_modal_2').close()"
+                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm font-semibold rounded-md">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+
+{{-- Popup for detail item --}}
 <dialog id="my_modal_1" class="modal">
     <div class="modal-box p-6 rounded-lg shadow-lg bg-white max-w-lg mx-auto">
         <div class="content w-[400px]">
@@ -290,12 +326,16 @@
                 qty = item.qty;
                 price = item.price;
                 total = item.qty * item.price;
+                status_id = item.status_order_item.id;
+                status_name = item.status_order_item.name;
                 arrOrderItem.push({
                 item_id,
                 item_name,
                 qty,
                 item_note,
                 price,
+                status_id,
+                status_name,
                 total
                 });
             });
@@ -303,6 +343,19 @@
         }
 
     });
+
+    function formatDateTime(inputDate) {
+        const date = new Date(inputDate);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    }
+
     function addOrder(){
         let ItemType = document.getElementById('item_id');
         let ItemSelected = ItemType.options[ItemType.selectedIndex];
@@ -319,12 +372,14 @@
         let price = parseInt(ItemSelected.getAttribute('data-price'));
         let total = 0;
         const existingItem = arrOrderItem.find(item => item.item_id === item_id);
-        if (existingItem) {
-            existingItem.qty += qty;
-            existingItem.total = existingItem.qty * existingItem.price;
-            total = existingItem.total;
-        } else {
-            // Add new item
+        const status_id = 1;
+        const status_name = "Diterima";
+        // if (existingItem) {
+        //     existingItem.qty += qty;
+        //     existingItem.total = existingItem.qty * existingItem.price;
+        //     total = existingItem.total;
+        // } else {
+        //     // Add new item
             total = qty * price;
             arrOrderItem.push({
             item_id,
@@ -332,9 +387,11 @@
             qty,
             item_note,
             price,
+            status_id,
+            status_name,
             total
             });
-        }
+        // }
         updateTable();
         closeModal();
     }
@@ -358,6 +415,7 @@
                     <td class="px-4 text-sm py-1 border-b">${item.item_name}</td>
                     <td class="px-4 text-sm py-1 border-b text-center">${item.qty}</td>
                     <td class="px-4 text-sm py-1 border-b max-w-[200px] truncate text-ellipsis" title="${item.note}">${item.item_note}</td>
+                    <td class="px-4 text-sm py-1 border-b text-center">${item.status_name}</td>
                     <td class="px-4 text-sm py-1 border-b">
                         <div class="float-end">${formatRupiah(item.price.toString()) }</div>
                     </td>
@@ -370,6 +428,7 @@
                     <td class="px-4 text-sm py-1 border-b">${item.item_name}</td>
                     <td class="px-4 text-sm py-1 border-b text-center">${item.qty}</td>
                     <td class="px-4 text-sm py-1 border-b max-w-[200px] truncate text-ellipsis" title="${item.note}">${item.item_note}</td>
+                    <td class="px-4 text-sm py-1 border-b text-center">${item.status_name}</td>
                     <td class="px-4 text-sm py-1 border-b">
                         <div class="float-end">${formatRupiah(item.price.toString()) }</div>
                     </td>
@@ -396,6 +455,30 @@
                 document.getElementById('balance_due').value = formatRupiah("0");
         }
         document.getElementById('list-order').value = JSON.stringify(arrOrderItem);
+    }
+
+    function setTableAuditTrail(data){
+        const tableBody = document.querySelector('#table-audittrail tbody');
+        tableBody.innerHTML = '';
+        if(data.length > 0){
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td class="px-4 text-sm py-1 border-b">
+                        <p>${formatDateTime(item.created_at)}</p>
+                        <p>${item.creator.name}</p>
+                    </td>
+                    <td class="px-4 text-sm py-1 border-b">${item.detail}</td>`;
+                    tableBody.appendChild(row);
+                });
+
+            }else{
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td class="px-4 text-sm py-1 border-b" colspan="2">Belum ada riwayat!</td>`;
+                    tableBody.appendChild(row);
+                }
+        my_modal_2.showModal();
     }
 
     function deleteItem(item_id){
