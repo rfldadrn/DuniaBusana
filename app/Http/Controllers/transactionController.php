@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Redirect;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\ValidationException;
 
 function generateTransactionCode($prefix = 'TRX') {
     $now = Carbon::now();
@@ -224,6 +225,35 @@ class transactionController extends Controller
         return view('transaction.detail',compact(['action','customer','transactionType','getTrx','statusTransaction','itemType','detail_order','statusPayment','AuditTrails']));
     }
 
+    public function pickUpTransaction(Request $request)
+    {
+        // Update transaction
+        $transaction = Transaction::find($request->transaction_id);
+        $transaction['status_transaction'] = 4; // Sudah diambil
+        $transaction->save();
+
+        // Update detail
+        DetailTransaction::where('transaction_id', '=', $request->transaction_id)
+            ->update(['status_order_item_id' => 7]);
+
+        return response()->json([
+            'redirect_url' => route('transaction.edit', ['id' => $transaction->id]),
+            'message' => 'Pesanan berhasil di ambil!'
+        ]);
+
+
+        // // Return JSON response
+        // return response()->json([
+        //         'message' => 'Transaksi selesai!',
+        //         'transaction_id' => $transaction->id,
+        //         'status_transaction' => $transaction->status_transaction
+        //     ]);
+
+        // return response()->json([
+        //     'message' => 'Transaksi selesai!',
+        //     'transaction_id' => $transaction,
+        // ]);
+    }
     /**
      * Update the specified resource in storage.
      */

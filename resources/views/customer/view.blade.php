@@ -4,8 +4,8 @@
             {{ __('Data Pelanggan') }}
         </h2>
     </x-slot>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="">
+        <div class="max-w-7xl mx-auto sm:px-2 lg:px-4">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                 <div class="mt-2">
@@ -46,6 +46,9 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+                    <div class="pagination mt-3">
+                        {{$customer->links() }}
                     </div>
                 </div>
                 </div>

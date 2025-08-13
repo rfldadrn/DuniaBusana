@@ -9,7 +9,7 @@ use App\Http\Controllers\usersController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 // Route::get('/dashboard', function () {
@@ -39,6 +39,7 @@ Route::middleware('auth','verified')->group(function () {
     Route::get('/transaction/detail/{id}', [transactionController::class, 'edit'])->name('transaction.edit');
     Route::delete('/transaction/delete/{id}', [transactionController::class, 'destroy'])->name('transaction.delete');
     Route::patch('/transaction', [transactionController::class, 'update'])->name('transaction.update');
+    Route::post('/pickUptransaction', [transactionController::class, 'pickUpTransaction'])->name('pickUpTransaction');
     Route::post('/transaction/store', [transactionController::class, 'store'])->name('transaction.store');
     Route::post('/transaction', [transactionController::class, 'viewWithFilter'])->name('transaction.filter');
 
@@ -51,7 +52,8 @@ Route::middleware('auth','verified')->group(function () {
     Route::delete('/customer/delete/{id}', [customerController::class, 'destroy'])->name('customer.delete');
 
     // Monitoring
-    Route::get('/monitoring', [monitoringController::class, 'view'])->name('monitoring.view');
+    Route::get('/monitoring', [monitoringController::class, 'monitoringView'])->name('monitoring.view');
+    Route::get('/monitoringDetail/{id}', [monitoringController::class, 'monitoringDetail'])->name('monitoring.detail');
     Route::post('/monitoring/updateDetail', [monitoringController::class, 'updateDetail'])->name('monitoring.updateDetail');
 
 });

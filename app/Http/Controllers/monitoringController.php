@@ -32,9 +32,60 @@ class monitoringController extends Controller
         $transaction->status_transaction = setWorkflow($getItem->transaction_id);
         $transaction->save();
 
+        $getStatusOrderItem = statusOrderItem::find(setWorkflow($getItem->transaction_id));
+        $auditTrailText = '
+        <p>Pakaian    : ' . $getItem->items->name . ' </p>
+        <p>Catatan    : ' . $getItem->note . ' </p>
+        <p>Status     : ' . $getStatusOrderItem->name . ' </p>
+        <p>Keterangan : ' . $request->note . ' </p>
+        ';
+        createAuditTrail('transaction',$getItem->transaction_id,$auditTrailText);
 
         $message = " - Pakaian berhasil di update!";
-            return Redirect::route('monitoring.view')
-            ->with('success',$message);
+            return back()->with('success', $message);
+;
+    }
+
+    public function monitoringView(Request $request)
+    {
+        $query = $request->input('search');
+        $orderDetail = DetailTransaction::with('trInfo.customer', 'items', 'status_order_item','trInfo')
+        ->when($request->search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('trInfo.customer', function ($sub) use ($search) {
+                    $sub->where(function ($inner) use ($search) {
+                        $inner->where('customer_name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+                });
+                // OR filter by order_id from trInfo
+                $q->orWhereHas('trInfo', function ($sub) use ($search) {
+                    $sub->where('order_id', 'like', "%{$search}%");
+                });
+            });
+        })
+        ->orderByDesc('transaction_id')
+        ->orderByDesc('id')
+        ->paginate(20);
+        $statusOrderItem = statusOrderItem::all();
+
+        // If AJAX request, return partial view
+        if ($request->ajax()) {
+            return view('monitoring.partials.table', compact('orderDetail'))->render();
+        }
+        return view('monitoring.view', compact(['orderDetail','statusOrderItem']));
+    }
+
+    public function monitoringDetail($id){
+        $getTrx = Transaction::find($id);
+        $orderDetail = DetailTransaction::with('trInfo.customer','items','status_order_item')
+        ->where('transaction_id','=',$id)
+        ->orderByDesc('transaction_id')
+        ->orderBy('item_id')
+        ->orderByDesc('id')
+        ->paginate(10);
+        $statusOrderItem = statusOrderItem::all();
+        $AuditTrails = getAuditTrails(1,$id);
+        return view('monitoring.detail',compact(['getTrx','orderDetail','statusOrderItem','AuditTrails']));
     }
 }

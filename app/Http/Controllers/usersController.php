@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Validator;
 class usersController extends Controller
 {
     public function view(){
-        $data = User::with('role')->get();
+        $data = User::with('role')
+        ->paginate(10);
         return view('users.view',['data' => $data]);
     }
 
@@ -39,7 +40,7 @@ class usersController extends Controller
         // 'password' => ['required', Password::defaults(), 'confirmed'],
         'roleId' => ['required', 'integer',Rule::exists('role', 'id')], //  corrected table name
         ]);
-        
+
         if ($validator->fails()) {
             $message = " - ";
                 return redirect()->back()
@@ -75,7 +76,7 @@ class usersController extends Controller
                 'message' => $message,
             ], 201);
         }
-            
+
             $validator = Validator::make($request->all(),[
                 'id' => ['required', 'integer'],
                 'name' => ['required', 'string', 'max:255'],
@@ -85,7 +86,7 @@ class usersController extends Controller
                 ],
                 'roleId' => ['required', 'integer',Rule::exists('role', 'id')], //  corrected table name
             ]);
-            
+
             if ($validator->fails()) {
                 $message = "Gagal mengupdate data!";
                 return redirect()->back()
@@ -100,18 +101,18 @@ class usersController extends Controller
             }
 
             $validated = $validator->validated();
-            
+
             $getUser['name'] = $validated['name'];
             $getUser['email'] = $validated['email'];
             $getUser['roleId'] = $validated['roleId'];
-            
+
             $getUser->save();
             $message = "Successfully - User has been updated!";
         // return response()->json([
         //     'message' => $message,
         //     'data' => $validated,
         // ], 201);
-        
+
         return Redirect::route('users.view')
         ->with('success',$message);
     }

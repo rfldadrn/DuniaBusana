@@ -220,6 +220,9 @@
             </div>
         </div>
         <div class="mt-6 flex justify-end gap-4">
+            <button type="button" id="pickup_transaction" class="btn @if($getTrx->status->id != 3) hidden @endif bg-green-600 text-white hover:bg-green-700 focus:bg-green-700 active:bg-green-900 px-5 py-2 rounded shadow" data-id="{{ $getTrx->id }}">
+                <i class="fa fa-check"></i> Pesanan diambil
+            </button>
             <button type="submit" form="mainForm" class="btn bg-indigo-600 text-white hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 px-5 py-2 rounded shadow">
                 <i class="fa fa-save"></i> Simpan
             </button>
@@ -564,4 +567,28 @@
             `width=${width},height=${height},left=${left},top=${top},resizable=yes`
         );
     }
+
+    document.getElementById('pickup_transaction').addEventListener('click', function () {
+        const transactionId = this.getAttribute('data-id');
+        const pickupUrl = "{{ route('pickUpTransaction') }}";
+        fetch(pickupUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+        body: JSON.stringify({ transaction_id: transactionId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+
+            // ✅ Redirect manually
+            window.location.href = data.redirect_url;
+
+        })
+        .catch(err => console.error(err));
+
+    });
+
 </script>

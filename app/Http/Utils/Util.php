@@ -2,6 +2,7 @@
 
 use App\Models\AuditTrails;
 use App\Models\DetailTransaction;
+use App\Models\Transaction;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,12 @@ use Illuminate\Validation\ValidationException;
         return $inputDate->lessThanOrEqualTo($currentDate);
     }
 
+    function formatRupiah($value)
+    {
+        $value = 'Rp. ' . number_format($value, 0, ',', '.');
+        echo $value; // Output: Rp 1.500.000
+
+    }
     function createAuditTrail($feature,$data_id,$detail)
     {
         $validator = Validator::make([
@@ -89,5 +96,4 @@ use Illuminate\Validation\ValidationException;
         }
         return $status_id;
     }
-
 ?>

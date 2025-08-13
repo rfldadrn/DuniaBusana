@@ -4,69 +4,19 @@
             {{ __('Monitoring Jahitan') }}
         </h2>
     </x-slot>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="">
+        <div class="max-w-7xl mx-auto sm:px-2 lg:px-4">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                <div class="mt-2">
-                    <div class="action text-end mb-3">
-                        <input type="text" id="search" autocomplete="off"
-                                    class="w-full rounded-md px-4 py-2 focus:outline-none border-gray-300"
-                                    placeholder="Cari item...">
+                    <div class="mt-2">
+                        <div class="action text-end mb-3">
+                            <input type="text" id="searchInput" autocomplete="off"
+                                        class="w-full rounded-md px-4 py-2 focus:outline-none border-gray-300"
+                                        placeholder="Cari pakaian..."
+                                        value="{{ old('value_search') }}">
+                        </div>
+                        @include('monitoring.partials.table')
                     </div>
-                    <div class="overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Nomor Transaksi</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Item</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Qty</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Note</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Status Item</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider w-1">Action</th>
-                                    {{-- Tambahkan kolom lain jika diperlukan, misalnya untuk Aksi --}}
-                                </tr->
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                @if ($orderDetail->isEmpty())
-                                    <tr>
-                                        <td colspan="8" class="text-center px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Tidak ada data!</td>
-                                    </tr>
-                                @endif
-                                @php
-                                    $grouped = $orderDetail->groupBy(fn($dt) => $dt->trInfo->order_id);
-                                @endphp
-                                @foreach ($grouped as $orderId => $details)
-                                    @foreach ($details as $index => $dt)
-                                        <tr>
-                                            @if ($index === 0)
-                                                <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-100" rowspan="{{ $details->count() }}">
-                                                    <a href="#">
-                                                        <p>{{ $dt->trInfo->order_id }}</p>
-                                                        <span>{{ $dt->trInfo->customer->customer_name }}</span>
-                                                    </a>
-                                                </td>
-                                            @endif
-                                            <td class="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $dt->items->name }}</td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">{{ $dt->qty }}</td>
-                                            <td class="px-6 py-2 whitespace-nowrap max-w-[200px] truncate text-ellipsis text-sm text-gray-500 dark:text-gray-400" title="{{ $dt->note }}">{{ $dt->note }}</td>
-                                            <td class="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                <x-status-badge id="{{ $dt->status_order_item->id }}" status="{{ $dt->status_order_item->name }}"/>
-                                            </td>
-                                            <td class="px-6 py-1 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
-                                                <button type="button" class="btn" onclick="showModalDetail({{ $dt }})"><i class="fa fa-history"></i></button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @endforeach
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pagination mt-3">
-                        {{$orderDetail->links() }}
-                    </div>
-                </div>
                 </div>
             </div>
         </div>
@@ -114,7 +64,6 @@
 
 <script>
     function showModalDetail(data){
-        console.log(data);
         document.getElementById('value_id').value = data.id
         document.getElementById('value_order_id').textContent = data.tr_info.order_id + " - " + data.tr_info.customer.customer_name
         document.getElementById('value_item_id').textContent = data.items.name

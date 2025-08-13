@@ -4,14 +4,13 @@
             {{ __('User Management') }}
         </h2>
     </x-slot>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="">
+        <div class="max-w-7xl mx-auto sm:px-2 lg:px-4">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                 <div class="mt-2">
                     <div class="text-end mb-3">
-                        <x-primary-button size="sm"><a href="/users/0">{{ __('Add') }} <i class="btn fa fa-add ml-1"></i></a></x-primary-button>
-                        <x-primary-button size="sm"><a href="/users/0">{{ __('Print') }} <i class="fa fa-print ml-1"></i></a></x-primary-button>
+                        <x-primary-button size="sm"><a href="/users/0">{{ __('Tambah') }} <i class="btn fa fa-add ml-1"></i></a></x-primary-button>
                     </div>
                     <div class="overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -43,11 +42,14 @@
                                             <x-text-input id="id" name="id" type="hidden" value="{{$dt->id}}" />
                                             <button class="w-auto" title="Delete"><i class="fa fa-trash"></i></button>
                                         </form> --}}
-                                    </td> 
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                    </div>
+                    <div class="pagination mt-3">
+                        {{$data->links() }}
                     </div>
                 </div>
                 </div>

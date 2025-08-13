@@ -16,7 +16,7 @@ class customerController extends Controller
      */
     public function view()
     {
-        $customer = Customer::withCount('Transaction')->orderByDesc('customer_name')->get();
+        $customer = Customer::withCount('Transaction')->orderByDesc('customer_name')->paginate(10);
         return view('customer.view',compact(['customer']));
     }
 
